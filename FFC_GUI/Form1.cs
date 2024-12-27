@@ -16,6 +16,7 @@ namespace FFC_GUI
     {
 
         string[] ports;
+        string sDataIn; // Serial Input Data packets
 
         /* Chart control */
         DataPoint curPoint = null;      // Variable used for chart point drag function
@@ -47,15 +48,21 @@ namespace FFC_GUI
 
             chart1.ChartAreas[0].AxisY.MajorGrid.Interval = 100;
             chart1.ChartAreas[0].AxisY.MinorGrid.Interval = 10;
-            chart1.ChartAreas[0].AxisY.Interval = 100;
+            chart1.ChartAreas[0].AxisY.Interval = 50;
             chart1.ChartAreas[0].AxisY.Minimum = -100;
             chart1.ChartAreas[0].AxisY.Maximum = 100;
 
             /* Populalte initial graph with default points */
+            chart1.Series["Series1"].Points.AddXY(-70, -100);
             chart1.Series["Series1"].Points.AddXY(-70, -70);
             chart1.Series["Series1"].Points.AddXY(0, -10);
             chart1.Series["Series1"].Points.AddXY(0, 10);
             chart1.Series["Series1"].Points.AddXY(70, 70);
+            chart1.Series["Series1"].Points.AddXY(70, 100);
+
+            chart1.Series["Series1"].Points[0].MarkerSize = 0;
+            chart1.Series["Series1"].Points.Last().MarkerSize = 0;
+
 
         }
 
@@ -114,10 +121,79 @@ namespace FFC_GUI
             
         }
 
-        private void chart1_MouseUp(object sender, MouseEventArgs e)
+        private void serialPort1_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-   
+            sDataIn = sDataIn += serialPort1.ReadExisting();    // add incoming chunk of data
+
+            if (sDataIn.EndsWith("\r\n") == true)
+            {
+                this.Invoke(new EventHandler(dataPacketParse));
+                sDataIn = "";
+            }
         }
+
+        private void dataPacketParse(object sender, EventArgs e)
+        {
+
+            float val_0, val_1; // ComboBox
+            string[] commands = sDataIn.Split('\n');    //Splits commands $103=10\r\n
+
+
+            foreach (var i in commands)
+            {
+                char[] delimiterChars = { ',', '=', '\t', '\r', '\n' };
+                string[] words = i.Split(delimiterChars);
+
+                if (words.Length < 2) break;
+
+                if (words[0].Contains("cmd") == true) //position and force cmd=1.23,4.0\n
+                {
+                    //if (float.TryParse(words[1].ToString(), out float n) == true) tBoxOutPower.Text = words[1].ToString();
+                    float.TryParse(words[1], out val_0);
+                    float.TryParse(words[2], out val_1);
+
+
+                    Point cursorPoint = new Point(10, 10);
+
+                    chart1.ChartAreas[0].CursorX.Position = val_0 * 1000;
+                    chart1.ChartAreas[0].CursorY.Position = val_1;
+
+
+                    Console.WriteLine("Plot: " + val_0 + "," + val_1);
+
+                }
+
+            }
+        }
+
+        private void move_currentPoint(double dx, double dy) {
+
+
+            if (hit.PointIndex == 1)
+            {
+                /* First point of the graph */
+                if ((dx < chart1.Series["Series1"].Points[2].XValue) && (dx >= chart1.ChartAreas[0].AxisX.Minimum))
+                    curPoint.XValue = dx;
+                chart1.Series["Series1"].Points[0].XValue = dx;
+            }
+            else if (hit.PointIndex == (chart1.Series["Series1"].Points.LongCount() - 2))
+            {
+                /* Last point of the graph*/
+                if ((dx > chart1.Series["Series1"].Points[hit.PointIndex - 1].XValue) && (dx <= chart1.ChartAreas[0].AxisX.Maximum))
+                    curPoint.XValue = dx;
+                chart1.Series["Series1"].Points[hit.PointIndex + 1].XValue = dx;
+            }
+            else
+            {
+                /* Sample is between two points */
+                if ((dx > chart1.Series["Series1"].Points[hit.PointIndex - 1].XValue) && (dx < chart1.Series["Series1"].Points[hit.PointIndex + 1].XValue))
+                    curPoint.XValue = dx;
+            }
+
+            if ((dy >= chart1.ChartAreas[0].AxisY.Minimum) && (dy <= chart1.ChartAreas[0].AxisY.Maximum))
+                curPoint.YValues[0] = dy;
+        }
+
 
         private void chart1_MouseMove(object sender, MouseEventArgs e)
         {
@@ -149,30 +225,47 @@ namespace FFC_GUI
                         return;
                     }
 
-                    
-                    if (hit.PointIndex == 0)    
-                    {
-                        /* First point of the graph */
-                        if((dx < chart1.Series["Series1"].Points[1].XValue) && (dx >= chart1.ChartAreas[0].AxisX.Minimum))
-                            curPoint.XValue = dx;
-                    }
-                    else if (hit.PointIndex == (chart1.Series["Series1"].Points.LongCount()-1) ) 
-                    {
-                        /* Last point of the graph*/
-                        if ((dx > chart1.Series["Series1"].Points[hit.PointIndex-1].XValue) && (dx <= chart1.ChartAreas[0].AxisX.Maximum))
-                            curPoint.XValue = dx;
-                    }
-                    else                        
-                    {
-                        /* Sample is between two points */
-                        if ((dx > chart1.Series["Series1"].Points[hit.PointIndex - 1].XValue) && (dx < chart1.Series["Series1"].Points[hit.PointIndex + 1].XValue))
-                            curPoint.XValue = dx;
-                    }
-                    
-                    if((dy >= chart1.ChartAreas[0].AxisY.Minimum) && (dy <= chart1.ChartAreas[0].AxisY.Maximum))
-                        curPoint.YValues[0] = dy;   
+                    move_currentPoint(dx, dy);
                 }
             }
+        }
+
+        private void transmit_Characteristics() {
+
+
+            string cmd = "cmap=";
+
+
+            for (int i = 1; i < chart1.Series["Series1"].Points.Count-1; i++)
+            {
+                // Append the X and Y values of each data point
+                //cmapBuilder.Append(series.Points[i].XValue);
+                cmd += chart1.Series["Series1"].Points[i].XValue.ToString("F5");
+                //cmapBuilder.Append(",");
+                cmd += (",");
+                //cmapBuilder.Append(series.Points[i].YValues[0]);
+                cmd += chart1.Series["Series1"].Points[i].YValues[0].ToString("F5");
+
+                if (i < chart1.Series["Series1"].Points.Count - 1)
+                {
+                    cmd += (",");
+                }
+            }
+
+            if (serialPort1.IsOpen)
+            {
+                try
+                {
+                    serialPort1.WriteLine(cmd);
+                    Console.WriteLine(cmd);
+
+                }
+                catch (Exception err)
+                {
+                    Console.WriteLine("Error: " + err);
+                }
+            };
+
         }
 
         private void chart1_MouseDown(object sender, MouseEventArgs e)
@@ -187,15 +280,27 @@ namespace FFC_GUI
 
             hit = chart1.HitTest(e.X, e.Y);
 
-            if (hit.PointIndex >= 0)        /* Select a Point */
+            /* Make sure that it´s not the last or the firts point the one selected */
+            if (hit.PointIndex > 0 && hit.PointIndex < (chart1.Series["Series1"].Points.LongCount() - 1))        /* Select a Point */
             {
-                curPoint = hit.Series.Points[hit.PointIndex];
+                try
+                {
+                    curPoint = hit.Series.Points[hit.PointIndex];
+                }
+                catch (Exception err)
+                {
+                    Console.WriteLine("Error: " + err);
+                }
+                
                 //curPoint.Color = Color.Red;       /* Highlight point color    */
                 curPoint.MarkerSize = 10;           /* Highlight point          */
             }
             else 
             {
                 /* transmit new characteristics to the controller */
+                //this.Invoke(new EventHandler(transmit_Characteristics));
+                transmit_Characteristics();
+
             }
 
             chart1.Focus();
@@ -225,6 +330,9 @@ namespace FFC_GUI
                 {
                     chart1.Series["Series1"].Points.AddXY(point.XValue, point.YValues[0]);
                 }
+
+                chart1.Series["Series1"].Points[0].MarkerSize = 0;
+                chart1.Series["Series1"].Points.Last().MarkerSize = 0;
             }
         }
 
@@ -232,11 +340,32 @@ namespace FFC_GUI
         {
             if (e.KeyCode == Keys.Delete)
             {
-                if (hit.PointIndex >= 0)        /* Point still selected */
+                if (hit.PointIndex >= 0 && chart1.Series["Series1"].Points.Count > 2)        /* Point still selected */
                 {
                     chart1.Series["Series1"].Points.RemoveAt(hit.PointIndex);
                     chart1.ResetAutoValues();
+
+
+                    transmit_Characteristics();
+                    e.Handled = true; // Prevent focus change
+                    e.SuppressKeyPress = true;
                 }
+            }
+            else if (e.KeyCode == Keys.Up)
+            {
+                
+                move_currentPoint(curPoint.XValue + 1, curPoint.YValues[0]);
+                e.Handled = true; // Prevent focus change
+                e.SuppressKeyPress = true;
+            }
+            else if (e.KeyCode == Keys.Down)
+            {
+            }
+            else if (e.KeyCode == Keys.Left)
+            {
+            }
+            else if (e.KeyCode == Keys.Right)
+            {
             }
         }
 
@@ -254,109 +383,96 @@ namespace FFC_GUI
             }
         }
 
-        private void Mass_textBox_TextChanged(object sender, EventArgs e)
-        {
-            tBox_Cursor = 1;
+       
 
-            if (int.TryParse(Mass_textBox.Text, out int value))
+        private void Mass_textBox_Leave(object sender, EventArgs e)
+        {
+
+            if (serialPort1.IsOpen)
             {
-                // Ensure the value is within the TrackBar's range
-                if (value >= trackBar1.Minimum && value <= trackBar1.Maximum)
+                try
                 {
-                    trackBar1.Value = value; // Set the TrackBar's value
+                    serialPort1.WriteLine("mass=" + Mass_textBox.Text);
+                    Console.WriteLine("mass=" + Mass_textBox.Text);
+                    
                 }
-                else
+                catch (Exception err)
                 {
-                    MessageBox.Show($"Value must be between {trackBar1.Minimum} and {trackBar1.Maximum}");
+                    Console.WriteLine("Error: " + err);
                 }
-            }
-            else
-            {
-                MessageBox.Show("Invalid number entered in Mass_textBox.");
-            }
+            };
         }
 
-        private void Damping_textBox_TextChanged(object sender, EventArgs e)
+        private void Mass_textBox_KeyDown(object sender, KeyEventArgs e)
         {
-            tBox_Cursor = 2;
-
-            if (int.TryParse(Damping_textBox.Text, out int value))
+            
+            if (e.KeyData == Keys.Enter)
             {
-                // Ensure the value is within the TrackBar's range
-                if (value >= trackBar1.Minimum && value <= trackBar1.Maximum)
-                {
-                    trackBar1.Value = value; // Set the TrackBar's value
-                }
-                else
-                {
-                    MessageBox.Show($"Value must be between {trackBar1.Minimum} and {trackBar1.Maximum}");
-                }
-            }
-            else
-            {
-                MessageBox.Show("Invalid number entered in Mass_textBox.");
-            }
-
-        }
-
-        private void Friction_textBox_TextChanged(object sender, EventArgs e)
-        {
-            tBox_Cursor = 3;
-
-            if (int.TryParse(Friction_textBox.Text, out int value))
-            {
-                // Ensure the value is within the TrackBar's range
-                if (value >= trackBar1.Minimum && value <= trackBar1.Maximum)
-                {
-                    trackBar1.Value = value; // Set the TrackBar's value
-                }
-                else
-                {
-                    MessageBox.Show($"Value must be between {trackBar1.Minimum} and {trackBar1.Maximum}");
-                }
-            }
-            else
-            {
-                MessageBox.Show("Invalid number entered in Mass_textBox.");
+                this.Invoke(new EventHandler(Mass_textBox_Leave));
+                e.Handled = true;
+                e.SuppressKeyPress = true;
             }
         }
 
-        private void Mass_textBox_Enter(object sender, EventArgs e)
+        private void Damping_textBox_Leave(object sender, EventArgs e)
         {
-            Mass_textBox_TextChanged(Mass_textBox, e);
+            if (serialPort1.IsOpen)
+            {
+                try
+                {
+                    serialPort1.WriteLine("damp=" + Damping_textBox.Text);
+                    Console.WriteLine("damp=" + Damping_textBox.Text);
+
+                }
+                catch (Exception err)
+                {
+                    Console.WriteLine("Error: " + err);
+                }
+            };
         }
 
-        private void Damping_textBox_Enter(object sender, EventArgs e)
+        private void Damping_textBox_KeyDown(object sender, KeyEventArgs e)
         {
-            Damping_textBox_TextChanged(Mass_textBox, e);
+            if (e.KeyData == Keys.Enter)
+            {
+                this.Invoke(new EventHandler(Damping_textBox_Leave));
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+            }
+        }
+
+        private void PosMax_tbox_Leave(object sender, EventArgs e)
+        {
+                          
+            float x = (float)Convert.ToDouble(PosMax_tbox.Text);
+            chart1.ChartAreas[0].AxisX.Maximum = x+1;
 
         }
 
-        private void Friction_textBox_Enter(object sender, EventArgs e)
+        private void PosMax_tbox_KeyDown(object sender, KeyEventArgs e)
         {
-            Friction_textBox_TextChanged(Mass_textBox, e);
-
-
+            if (e.KeyData == Keys.Enter)
+            {
+                this.Invoke(new EventHandler(PosMax_tbox_Leave));
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+            }
         }
 
-        private void trackBar1_Scroll(object sender, EventArgs e)
+        private void PosMin_tbox_Leave(object sender, EventArgs e)
         {
-            switch (tBox_Cursor) {
+            float x = (float)Convert.ToDouble(PosMin_tbox.Text);
+            chart1.ChartAreas[0].AxisX.Minimum = x-1;
+              
+        }
 
-                case 1:
-                    Mass_textBox.Text = trackBar1.Value.ToString();
-                    break;
-                
-                case 2:
-                    Damping_textBox.Text = trackBar1.Value.ToString();
-                    break;
-                
-                case 3:
-                    Friction_textBox.Text = trackBar1.Value.ToString();
-                    break;
-                
-                default:
-                    break;
+        private void PosMin_tbox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyData == Keys.Enter)
+            {
+                this.Invoke(new EventHandler(PosMin_tbox_Leave));
+                e.Handled = true;
+                e.SuppressKeyPress = true;
             }
         }
     } 
