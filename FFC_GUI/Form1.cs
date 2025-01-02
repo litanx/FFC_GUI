@@ -475,6 +475,33 @@ namespace FFC_GUI
                 e.SuppressKeyPress = true;
             }
         }
+
+        private void Friction_textBox_Leave(object sender, EventArgs e)
+        {
+            if (serialPort1.IsOpen)
+            {
+                try
+                {
+                    serialPort1.WriteLine("frcn=" + Friction_textBox.Text);
+                    Console.WriteLine("frcn=" + Friction_textBox.Text);
+
+                }
+                catch (Exception err)
+                {
+                    Console.WriteLine("Error: " + err);
+                }
+            };
+        }
+
+        private void Friction_textBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyData == Keys.Enter)
+            {
+                this.Invoke(new EventHandler(Friction_textBox_Leave));
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+            }
+        }
     } 
 }
 

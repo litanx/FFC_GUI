@@ -202,6 +202,8 @@
             this.Friction_textBox.Size = new System.Drawing.Size(93, 22);
             this.Friction_textBox.TabIndex = 14;
             this.Friction_textBox.Text = "1";
+            this.Friction_textBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Friction_textBox_KeyDown);
+            this.Friction_textBox.Leave += new System.EventHandler(this.Friction_textBox_Leave);
             // 
             // PosMax_tbox
             // 
