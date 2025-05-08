@@ -53,12 +53,14 @@ namespace FFC_GUI
             chart1.ChartAreas[0].AxisY.Maximum = 100;
 
             /* Populalte initial graph with default points */
-            chart1.Series["Series1"].Points.AddXY(-70, -100);
-            chart1.Series["Series1"].Points.AddXY(-70, -70);
-            chart1.Series["Series1"].Points.AddXY(0, -10);
-            chart1.Series["Series1"].Points.AddXY(0, 10);
-            chart1.Series["Series1"].Points.AddXY(70, 70);
-            chart1.Series["Series1"].Points.AddXY(70, 100);
+            chart1.Series["Series1"].Points.AddXY(-90, -100);
+            chart1.Series["Series1"].Points.AddXY(-90, 0);
+            chart1.Series["Series1"].Points.AddXY(-50, 0);
+            chart1.Series["Series1"].Points.AddXY(-0.5, -20);
+            chart1.Series["Series1"].Points.AddXY(0.5, 20);
+            chart1.Series["Series1"].Points.AddXY(50, 0);
+            chart1.Series["Series1"].Points.AddXY(90, 0);
+            chart1.Series["Series1"].Points.AddXY(90, 100);
 
             chart1.Series["Series1"].Points[0].MarkerSize = 0;
             chart1.Series["Series1"].Points.Last().MarkerSize = 0;
@@ -155,7 +157,7 @@ namespace FFC_GUI
 
                     Point cursorPoint = new Point(10, 10);
 
-                    chart1.ChartAreas[0].CursorX.Position = val_0 * 1000;
+                    chart1.ChartAreas[0].CursorX.Position = val_0;
                     chart1.ChartAreas[0].CursorY.Position = val_1;
 
 
