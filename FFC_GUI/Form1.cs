@@ -52,20 +52,37 @@ namespace FFC_GUI
             chart1.ChartAreas[0].AxisY.Minimum = -100;
             chart1.ChartAreas[0].AxisY.Maximum = 100;
 
-            /* Populalte initial graph with default points */
-            chart1.Series["Series1"].Points.AddXY(-90, -100);
-            chart1.Series["Series1"].Points.AddXY(-90, 0);
-            chart1.Series["Series1"].Points.AddXY(-50, 0);
-            chart1.Series["Series1"].Points.AddXY(-0.5, -20);
-            chart1.Series["Series1"].Points.AddXY(0.5, 20);
-            chart1.Series["Series1"].Points.AddXY(50, 0);
-            chart1.Series["Series1"].Points.AddXY(90, 0);
-            chart1.Series["Series1"].Points.AddXY(90, 100);
+            var dummy = new Series("Dummy");
+            dummy.ChartType = SeriesChartType.Point;
+            dummy.Color = Color.Transparent; // invisible
+            dummy.Points.AddXY(0, 0);
+            chart1.Series.Add(dummy);
 
+            /* Populalte initial graph with default points */
+
+            chart1.Series["Series1"].Points.AddXY(-90, -100);
             chart1.Series["Series1"].Points[0].MarkerSize = 0;
+            /*-------------------------------------------------------*/
+            chart1.Series["Series1"].Points.AddXY(-90, 0);
+            chart1.Series["Series1"].Points.AddXY(-5, 0);
+            chart1.Series["Series1"].Points.AddXY(-5, 10);
+            chart1.Series["Series1"].Points.AddXY(5, -10);
+            chart1.Series["Series1"].Points.AddXY(5, 0);
+            chart1.Series["Series1"].Points.AddXY(90, 0);
+            /*-------------------------------------------------------*/
+            chart1.Series["Series1"].Points.AddXY(90, 100);
             chart1.Series["Series1"].Points.Last().MarkerSize = 0;
 
 
+            chart1.Series["Series2"].Points.AddXY(-90, 20);
+            chart1.Series["Series2"].Points[0].MarkerSize = 0;
+
+            chart1.Series["Series2"].Points.AddXY(-5, 20);
+            chart1.Series["Series2"].Points.AddXY(0, 50);
+            chart1.Series["Series2"].Points.AddXY(5, 20);
+
+            chart1.Series["Series2"].Points.AddXY(90, 20);
+            chart1.Series["Series2"].Points.Last().MarkerSize = 0;
         }
 
 
@@ -235,7 +252,7 @@ namespace FFC_GUI
         private void transmit_Characteristics() {
 
 
-            string cmd = "cmap=";
+            string cmd = "fmap=";
 
 
             for (int i = 1; i < chart1.Series["Series1"].Points.Count-1; i++)
@@ -282,20 +299,22 @@ namespace FFC_GUI
 
             hit = chart1.HitTest(e.X, e.Y);
 
-            /* Make sure that it´s not the last or the firts point the one selected */
-            if (hit.PointIndex > 0 && hit.PointIndex < (chart1.Series["Series1"].Points.LongCount() - 1))        /* Select a Point */
+            if (hit.Series == null || hit.PointIndex <= 0) return;
+
+           int lastIndex = hit.Series.Points.Count - 1;
+
+            // avoid first or last point
+            if (hit.PointIndex > 0 && hit.PointIndex < lastIndex)
             {
                 try
                 {
                     curPoint = hit.Series.Points[hit.PointIndex];
+                    curPoint.MarkerSize = 10; // highlight
                 }
                 catch (Exception err)
                 {
                     Console.WriteLine("Error: " + err);
                 }
-                
-                //curPoint.Color = Color.Red;       /* Highlight point color    */
-                curPoint.MarkerSize = 10;           /* Highlight point          */
             }
             else 
             {
@@ -502,6 +521,55 @@ namespace FFC_GUI
                 this.Invoke(new EventHandler(Friction_textBox_Leave));
                 e.Handled = true;
                 e.SuppressKeyPress = true;
+            }
+        }
+
+        private void btnForce_Click(object sender, EventArgs e)
+        {
+
+            var series = chart1.Series["Series1"];
+
+            // Toggle series enabled/disabled
+            series.Enabled = !series.Enabled;
+
+            // Update button appearance
+            if (series.Enabled)
+            {
+                // Restore default colors
+                btnForce.BackColor = SystemColors.Control;
+                btnForce.ForeColor = SystemColors.ControlText;
+                btnForce.FlatStyle = FlatStyle.Standard;
+            }
+            else
+            {
+                // Apply "greyed out" style
+                btnForce.BackColor = Color.LightGray;
+                btnForce.ForeColor = Color.DarkGray;
+                btnForce.FlatStyle = FlatStyle.Flat;
+            }
+        }
+
+        private void btnDamper_Click(object sender, EventArgs e)
+        {
+            var series = chart1.Series["Series2"];
+
+            // Toggle series enabled/disabled
+            series.Enabled = !series.Enabled;
+
+            // Update button appearance
+            if (series.Enabled)
+            {
+                // Restore default colors
+                btnDamper.BackColor = SystemColors.Control;
+                btnDamper.ForeColor = SystemColors.ControlText;
+                btnDamper.FlatStyle = FlatStyle.Standard;
+            }
+            else
+            {
+                // Apply "greyed out" style
+                btnDamper.BackColor = Color.LightGray;
+                btnDamper.ForeColor = Color.DarkGray;
+                btnDamper.FlatStyle = FlatStyle.Flat;
             }
         }
     } 

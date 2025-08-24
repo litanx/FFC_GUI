@@ -29,9 +29,9 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea3 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Series series5 = new System.Windows.Forms.DataVisualization.Charting.Series();
-            System.Windows.Forms.DataVisualization.Charting.Series series6 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.btnOPENCLOSE = new System.Windows.Forms.Button();
             this.cBoxCOMPort = new System.Windows.Forms.ComboBox();
@@ -47,6 +47,8 @@
             this.PosMin_tbox = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
+            this.btnForce = new System.Windows.Forms.Button();
+            this.btnDamper = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -55,49 +57,52 @@
             this.chart1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            chartArea3.AxisX.Interval = 50D;
-            chartArea3.AxisX.IntervalOffsetType = System.Windows.Forms.DataVisualization.Charting.DateTimeIntervalType.Number;
-            chartArea3.AxisX.IntervalType = System.Windows.Forms.DataVisualization.Charting.DateTimeIntervalType.Number;
-            chartArea3.AxisX.IsLabelAutoFit = false;
-            chartArea3.AxisX.MajorGrid.Interval = 100D;
-            chartArea3.AxisX.MajorTickMark.Interval = 10D;
-            chartArea3.AxisX.MajorTickMark.IntervalOffset = -10D;
-            chartArea3.AxisX.MajorTickMark.IntervalOffsetType = System.Windows.Forms.DataVisualization.Charting.DateTimeIntervalType.Number;
-            chartArea3.AxisX.MajorTickMark.IntervalType = System.Windows.Forms.DataVisualization.Charting.DateTimeIntervalType.Number;
-            chartArea3.AxisX.Maximum = 100D;
-            chartArea3.AxisX.Minimum = -100D;
-            chartArea3.AxisX.MinorGrid.Enabled = true;
-            chartArea3.AxisX.MinorGrid.Interval = 10D;
-            chartArea3.AxisX.MinorGrid.LineColor = System.Drawing.Color.LightGray;
-            chartArea3.AxisX.ScaleView.Zoomable = false;
-            chartArea3.AxisY.Interval = 50D;
-            chartArea3.AxisY.IsLabelAutoFit = false;
-            chartArea3.AxisY.MajorGrid.Interval = 100D;
-            chartArea3.AxisY.MajorTickMark.Interval = 10D;
-            chartArea3.AxisY.Maximum = 100D;
-            chartArea3.AxisY.Minimum = -100D;
-            chartArea3.AxisY.MinorGrid.Enabled = true;
-            chartArea3.AxisY.MinorGrid.Interval = 10D;
-            chartArea3.AxisY.MinorGrid.LineColor = System.Drawing.Color.LightGray;
-            chartArea3.AxisY.ScaleView.Zoomable = false;
-            chartArea3.BackColor = System.Drawing.Color.White;
-            chartArea3.Name = "ChartArea1";
-            this.chart1.ChartAreas.Add(chartArea3);
+            chartArea1.AxisX.Interval = 50D;
+            chartArea1.AxisX.IntervalOffsetType = System.Windows.Forms.DataVisualization.Charting.DateTimeIntervalType.Number;
+            chartArea1.AxisX.IntervalType = System.Windows.Forms.DataVisualization.Charting.DateTimeIntervalType.Number;
+            chartArea1.AxisX.IsLabelAutoFit = false;
+            chartArea1.AxisX.MajorGrid.Interval = 100D;
+            chartArea1.AxisX.MajorTickMark.Interval = 10D;
+            chartArea1.AxisX.MajorTickMark.IntervalOffset = -10D;
+            chartArea1.AxisX.MajorTickMark.IntervalOffsetType = System.Windows.Forms.DataVisualization.Charting.DateTimeIntervalType.Number;
+            chartArea1.AxisX.MajorTickMark.IntervalType = System.Windows.Forms.DataVisualization.Charting.DateTimeIntervalType.Number;
+            chartArea1.AxisX.Maximum = 100D;
+            chartArea1.AxisX.Minimum = -100D;
+            chartArea1.AxisX.MinorGrid.Enabled = true;
+            chartArea1.AxisX.MinorGrid.Interval = 10D;
+            chartArea1.AxisX.MinorGrid.LineColor = System.Drawing.Color.LightGray;
+            chartArea1.AxisX.ScaleView.Zoomable = false;
+            chartArea1.AxisY.Interval = 50D;
+            chartArea1.AxisY.IsLabelAutoFit = false;
+            chartArea1.AxisY.MajorGrid.Interval = 100D;
+            chartArea1.AxisY.MajorTickMark.Interval = 10D;
+            chartArea1.AxisY.Maximum = 100D;
+            chartArea1.AxisY.Minimum = -100D;
+            chartArea1.AxisY.MinorGrid.Enabled = true;
+            chartArea1.AxisY.MinorGrid.Interval = 10D;
+            chartArea1.AxisY.MinorGrid.LineColor = System.Drawing.Color.LightGray;
+            chartArea1.AxisY.ScaleView.Zoomable = false;
+            chartArea1.BackColor = System.Drawing.Color.White;
+            chartArea1.Name = "ChartArea1";
+            this.chart1.ChartAreas.Add(chartArea1);
             this.chart1.Location = new System.Drawing.Point(158, 10);
-            this.chart1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.chart1.Margin = new System.Windows.Forms.Padding(2);
             this.chart1.Name = "chart1";
-            series5.ChartArea = "ChartArea1";
-            series5.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
-            series5.IsVisibleInLegend = false;
-            series5.MarkerSize = 6;
-            series5.MarkerStyle = System.Windows.Forms.DataVisualization.Charting.MarkerStyle.Circle;
-            series5.Name = "Series1";
-            series5.YValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.Double;
-            series6.ChartArea = "ChartArea1";
-            series6.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
-            series6.Name = "Series2";
-            this.chart1.Series.Add(series5);
-            this.chart1.Series.Add(series6);
+            series1.ChartArea = "ChartArea1";
+            series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series1.IsVisibleInLegend = false;
+            series1.MarkerSize = 6;
+            series1.MarkerStyle = System.Windows.Forms.DataVisualization.Charting.MarkerStyle.Circle;
+            series1.Name = "Series1";
+            series1.YValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.Double;
+            series2.ChartArea = "ChartArea1";
+            series2.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series2.IsVisibleInLegend = false;
+            series2.MarkerSize = 6;
+            series2.MarkerStyle = System.Windows.Forms.DataVisualization.Charting.MarkerStyle.Circle;
+            series2.Name = "Series2";
+            this.chart1.Series.Add(series1);
+            this.chart1.Series.Add(series2);
             this.chart1.Size = new System.Drawing.Size(613, 377);
             this.chart1.TabIndex = 0;
             this.chart1.Text = "chart1";
@@ -110,7 +115,7 @@
             // 
             this.btnOPENCLOSE.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnOPENCLOSE.Location = new System.Drawing.Point(714, 388);
-            this.btnOPENCLOSE.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnOPENCLOSE.Margin = new System.Windows.Forms.Padding(2);
             this.btnOPENCLOSE.Name = "btnOPENCLOSE";
             this.btnOPENCLOSE.Size = new System.Drawing.Size(57, 26);
             this.btnOPENCLOSE.TabIndex = 3;
@@ -124,7 +129,7 @@
             this.cBoxCOMPort.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.cBoxCOMPort.FormattingEnabled = true;
             this.cBoxCOMPort.Location = new System.Drawing.Point(619, 392);
-            this.cBoxCOMPort.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.cBoxCOMPort.Margin = new System.Windows.Forms.Padding(2);
             this.cBoxCOMPort.Name = "cBoxCOMPort";
             this.cBoxCOMPort.Size = new System.Drawing.Size(92, 21);
             this.cBoxCOMPort.TabIndex = 2;
@@ -137,7 +142,7 @@
             // Enable_btn
             // 
             this.Enable_btn.Location = new System.Drawing.Point(9, 10);
-            this.Enable_btn.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Enable_btn.Margin = new System.Windows.Forms.Padding(2);
             this.Enable_btn.Name = "Enable_btn";
             this.Enable_btn.Size = new System.Drawing.Size(138, 31);
             this.Enable_btn.TabIndex = 4;
@@ -245,11 +250,33 @@
             this.label5.TabIndex = 20;
             this.label5.Text = "PosMin";
             // 
+            // btnForce
+            // 
+            this.btnForce.Location = new System.Drawing.Point(13, 138);
+            this.btnForce.Name = "btnForce";
+            this.btnForce.Size = new System.Drawing.Size(75, 23);
+            this.btnForce.TabIndex = 21;
+            this.btnForce.Text = "Spring";
+            this.btnForce.UseVisualStyleBackColor = true;
+            this.btnForce.Click += new System.EventHandler(this.btnForce_Click);
+            // 
+            // btnDamper
+            // 
+            this.btnDamper.Location = new System.Drawing.Point(13, 167);
+            this.btnDamper.Name = "btnDamper";
+            this.btnDamper.Size = new System.Drawing.Size(75, 23);
+            this.btnDamper.TabIndex = 22;
+            this.btnDamper.Text = "Damping";
+            this.btnDamper.UseVisualStyleBackColor = true;
+            this.btnDamper.Click += new System.EventHandler(this.btnDamper_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(780, 423);
+            this.Controls.Add(this.btnDamper);
+            this.Controls.Add(this.btnForce);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.PosMin_tbox);
@@ -264,7 +291,7 @@
             this.Controls.Add(this.btnOPENCLOSE);
             this.Controls.Add(this.cBoxCOMPort);
             this.Controls.Add(this.chart1);
-            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "Form1";
             this.Text = "FFC GUI";
             this.Load += new System.EventHandler(this.Form1_Load);
@@ -291,6 +318,8 @@
         private System.Windows.Forms.TextBox PosMin_tbox;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Button btnForce;
+        private System.Windows.Forms.Button btnDamper;
     }
 }
 
