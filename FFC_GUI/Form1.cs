@@ -187,30 +187,65 @@ namespace FFC_GUI
 
         private void move_currentPoint(double dx, double dy) {
 
+            if (hit != null)        /* Point still selected */
+            {
 
-            if (hit.PointIndex == 1)
-            {
-                /* First point of the graph */
-                if ((dx < chart1.Series["Series1"].Points[2].XValue) && (dx >= chart1.ChartAreas[0].AxisX.Minimum))
-                    curPoint.XValue = dx;
-                chart1.Series["Series1"].Points[0].XValue = dx;
-            }
-            else if (hit.PointIndex == (chart1.Series["Series1"].Points.LongCount() - 2))
-            {
-                /* Last point of the graph*/
-                if ((dx > chart1.Series["Series1"].Points[hit.PointIndex - 1].XValue) && (dx <= chart1.ChartAreas[0].AxisX.Maximum))
-                    curPoint.XValue = dx;
-                chart1.Series["Series1"].Points[hit.PointIndex + 1].XValue = dx;
-            }
-            else
-            {
-                /* Sample is between two points */
-                if ((dx > chart1.Series["Series1"].Points[hit.PointIndex - 1].XValue) && (dx < chart1.Series["Series1"].Points[hit.PointIndex + 1].XValue))
-                    curPoint.XValue = dx;
-            }
+                string Series = hit.Series.Name;
 
-            if ((dy >= chart1.ChartAreas[0].AxisY.Minimum) && (dy <= chart1.ChartAreas[0].AxisY.Maximum))
-                curPoint.YValues[0] = dy;
+                if (Series == "Series2" && dy < 0)      dy = 0;         // Constrain damping to positive values
+                
+                if (hit.PointIndex == 1)
+                {
+                    // First point of the graph
+                    if ((dx < chart1.Series[Series].Points[2].XValue) &&
+                        (dx >= chart1.ChartAreas[0].AxisX.Minimum))
+                    {
+                        curPoint.XValue = dx;
+
+                        if (Series == "Series1")
+                        {
+                            chart1.Series["Series1"].Points[0].XValue = dx; // Move vertical lines with first and last point
+                            chart1.Series["Series2"].Points[0].XValue = dx; // Move damping limits together
+                        }
+
+                        if (Series == "Series2")                            // Move horizontal lines with first and last point
+                            chart1.Series[Series].Points[0].YValues[0] = dy;
+                    }                       
+                }
+
+                if (hit.PointIndex == (chart1.Series[Series].Points.Count - 2))
+                {
+                    // Last point of the graph
+                    if ((dx > chart1.Series[Series].Points[hit.PointIndex - 1].XValue) &&
+                        (dx <= chart1.ChartAreas[0].AxisX.Maximum))
+                    {
+                        curPoint.XValue = dx;
+
+                        if (Series == "Series1")
+                        {
+                            chart1.Series[Series].Points[hit.PointIndex + 1].XValue = dx;     // Move vertical lines with first and last point
+                            int lastIndex = chart1.Series["Series2"].Points.Count - 1;
+                            chart1.Series["Series2"].Points[lastIndex].XValue = dx;           // Move damping limits together 
+
+                        }
+
+                        if (Series == "Series2")                        // Move horizontal lines with first and last point
+
+                            chart1.Series[Series].Points[hit.PointIndex + 1].YValues[0] = dy;
+                    }
+                        
+                }
+                else
+                {
+                    /* Sample is between two points */
+                    if ((dx > chart1.Series[Series].Points[hit.PointIndex - 1].XValue) && (dx < chart1.Series[Series].Points[hit.PointIndex + 1].XValue))
+                        curPoint.XValue = dx;
+                }
+
+                if ((dy >= chart1.ChartAreas[0].AxisY.Minimum) && (dy <= chart1.ChartAreas[0].AxisY.Maximum)) 
+                    curPoint.YValues[0] = dy;
+ 
+            }
         }
 
 
@@ -254,22 +289,55 @@ namespace FFC_GUI
 
             string cmd = "fmap=";
 
-
-            for (int i = 1; i < chart1.Series["Series1"].Points.Count-1; i++)
+            for (int i = 1; i < chart1.Series["Series1"].Points.Count - 1; i++)
             {
                 // Append the X and Y values of each data point
                 //cmapBuilder.Append(series.Points[i].XValue);
-                cmd += chart1.Series["Series1"].Points[i].XValue.ToString("F5");
+                cmd += chart1.Series["Series1"].Points[i].XValue.ToString("0.#####");
                 //cmapBuilder.Append(",");
                 cmd += (",");
                 //cmapBuilder.Append(series.Points[i].YValues[0]);
-                cmd += chart1.Series["Series1"].Points[i].YValues[0].ToString("F5");
+                cmd += chart1.Series["Series1"].Points[i].YValues[0].ToString("0.#####");
 
                 if (i < chart1.Series["Series1"].Points.Count - 1)
                 {
                     cmd += (",");
                 }
             }
+
+
+            if (serialPort1.IsOpen)
+            {
+                try
+                {
+                    serialPort1.WriteLine(cmd);
+                    Console.WriteLine(cmd);
+
+                }
+                catch (Exception err)
+                {
+                    Console.WriteLine("Error: " + err);
+                }
+            };
+
+            cmd = "cmap=";
+
+            for (int i = 1; i < chart1.Series["Series2"].Points.Count - 1; i++)
+            {
+                // Append the X and Y values of each data point
+                //cmapBuilder.Append(series.Points[i].XValue);
+                cmd += chart1.Series["Series2"].Points[i].XValue.ToString("0.#####");
+                //cmapBuilder.Append(",");
+                cmd += (",");
+                //cmapBuilder.Append(series.Points[i].YValues[0]);
+                cmd += chart1.Series["Series2"].Points[i].YValues[0].ToString("0.#####");
+
+                if (i < chart1.Series["Series2"].Points.Count - 1)
+                {
+                    cmd += (",");
+                }
+            }
+
 
             if (serialPort1.IsOpen)
             {
@@ -299,7 +367,12 @@ namespace FFC_GUI
 
             hit = chart1.HitTest(e.X, e.Y);
 
-            if (hit.Series == null || hit.PointIndex <= 0) return;
+            if (hit.Series == null || hit.PointIndex <= 0)
+            {
+                /* transmit new characteristics to the controller */
+                transmit_Characteristics();
+                return;
+            }
 
            int lastIndex = hit.Series.Points.Count - 1;
 
@@ -316,13 +389,7 @@ namespace FFC_GUI
                     Console.WriteLine("Error: " + err);
                 }
             }
-            else 
-            {
-                /* transmit new characteristics to the controller */
-                //this.Invoke(new EventHandler(transmit_Characteristics));
-                transmit_Characteristics();
 
-            }
 
             chart1.Focus();
 
@@ -337,23 +404,28 @@ namespace FFC_GUI
                 Axis ay = ca.AxisY;
 
                 /* Create a new point in the chart */
-                chart1.Series["Series1"].Points.AddXY(ax.PixelPositionToValue(e.X), ay.PixelPositionToValue(e.Y));
-                //chart1.Series["Series1"].OrderBy(Points <= Points.Y);
-
-                // Sort the points by X value
-                var sortedPoints = chart1.Series["Series1"].Points
-                    .OrderBy(p => p.XValue)
-                    .ToList();
-
-                // Clear and re-add the points in sorted order
-                chart1.Series["Series1"].Points.Clear();
-                foreach (var point in sortedPoints)
+                if (hit.PointIndex >= 0)        /* Point still selected */
                 {
-                    chart1.Series["Series1"].Points.AddXY(point.XValue, point.YValues[0]);
-                }
+                    string Series = hit.Series.Name;
 
-                chart1.Series["Series1"].Points[0].MarkerSize = 0;
-                chart1.Series["Series1"].Points.Last().MarkerSize = 0;
+                    chart1.Series[Series].Points.AddXY(ax.PixelPositionToValue(e.X), ay.PixelPositionToValue(e.Y));
+
+                    // Sort the points by X value
+                    var sortedPoints = chart1.Series[Series].Points
+                        .OrderBy(p => p.XValue)
+                        .ToList();
+
+                    // Clear and re-add the points in sorted order
+                    chart1.Series[Series].Points.Clear();
+                    foreach (var point in sortedPoints)
+                    {
+                        chart1.Series[Series].Points.AddXY(point.XValue, point.YValues[0]);
+                    }
+
+                    chart1.Series[Series].Points[0].MarkerSize = 0;
+                    chart1.Series[Series].Points.Last().MarkerSize = 0;
+
+                }
             }
         }
 
@@ -361,16 +433,33 @@ namespace FFC_GUI
         {
             if (e.KeyCode == Keys.Delete)
             {
-                if (hit.PointIndex >= 0 && chart1.Series["Series1"].Points.Count > 2)        /* Point still selected */
+                if (hit.PointIndex >= 0 )        /* Point still selected */
                 {
-                    chart1.Series["Series1"].Points.RemoveAt(hit.PointIndex);
-                    chart1.ResetAutoValues();
+                    string Series = hit.Series.Name;
 
+                    if (chart1.Series[Series].Points.Count > 2) {
+                        chart1.Series[Series].Points.RemoveAt(hit.PointIndex);
+                        chart1.ResetAutoValues();
 
-                    transmit_Characteristics();
-                    e.Handled = true; // Prevent focus change
-                    e.SuppressKeyPress = true;
+                        if (Series == "Series1")
+                        {
+                            int lastIndex = chart1.Series[Series].Points.Count - 1;
+                            chart1.Series[Series].Points[lastIndex].XValue = chart1.Series[Series].Points[lastIndex - 1].XValue;           // Move damping limits together 
+                            chart1.Series[Series].Points[0].XValue = chart1.Series[Series].Points[1].XValue; // Move vertical lines with first and last point
+                        }
+                        if (Series == "Series2")
+                        {
+                            int lastIndex = chart1.Series[Series].Points.Count - 1;
+                            chart1.Series[Series].Points[lastIndex].YValues[0] = chart1.Series[Series].Points[lastIndex - 1].YValues[0];           // Move damping limits together 
+                            chart1.Series[Series].Points[0].YValues[0] = chart1.Series[Series].Points[1].YValues[0]; // Move vertical lines with first and last point
+                        }
+
+                            transmit_Characteristics();
+                    }                   
+
                 }
+                e.Handled = true; // Prevent focus change
+                e.SuppressKeyPress = true;
             }
             else if (e.KeyCode == Keys.Up)
             {
