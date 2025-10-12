@@ -83,6 +83,22 @@ namespace FFC_GUI
 
             chart1.Series["Series2"].Points.AddXY(90, 20);
             chart1.Series["Series2"].Points.Last().MarkerSize = 0;
+
+            chart1.Series["Series3"]["PointWidth"] = "0.005"; // thinner bar
+            chart1.Series["Series3"].Points.AddXY(30, 20);
+            chart1.Series["Series3"].Points[0].Color = Color.Blue;
+
+            chart1.Series["Series3"].Points.AddXY(-30, 20);
+            //chart1.Series["Series3"].Points[0].Color = Color.Red;
+
+
+            //
+
+            //int idx = chart1.Series["Series3"].Points.AddXY(30, 0);
+            //chart1.Series["Series3"].Points[idx].YValues[1] = 20; // top of bar
+
+
+
         }
 
 
@@ -192,59 +208,95 @@ namespace FFC_GUI
 
                 string Series = hit.Series.Name;
 
-                if (Series == "Series2" && dy < 0)      dy = 0;         // Constrain damping to positive values
-                
-                if (hit.PointIndex == 1)
+                if (Series == "Series1")
                 {
-                    // First point of the graph
-                    if ((dx < chart1.Series[Series].Points[2].XValue) &&
-                        (dx >= chart1.ChartAreas[0].AxisX.Minimum))
+                    if (hit.PointIndex == 1)
                     {
-                        curPoint.XValue = dx;
-
-                        if (Series == "Series1")
+                        // First point of the graph
+                        if ((dx < chart1.Series[Series].Points[2].XValue) &&
+                            (dx >= chart1.ChartAreas[0].AxisX.Minimum))
                         {
-                            chart1.Series["Series1"].Points[0].XValue = dx; // Move vertical lines with first and last point
-                            chart1.Series["Series2"].Points[0].XValue = dx; // Move damping limits together
+                            curPoint.XValue = Math.Round(dx / 0.05) * 0.05; //dx;
+
+                            chart1.Series["Series1"].Points[0].XValue = Math.Round(dx / 0.05) * 0.05; //dx; // Move vertical lines with first and last point
+                            chart1.Series["Series2"].Points[0].XValue = Math.Round(dx / 0.05) * 0.05; //dx; // Move damping limits together
                         }
-
-                        if (Series == "Series2")                            // Move horizontal lines with first and last point
-                            chart1.Series[Series].Points[0].YValues[0] = dy;
-                    }                       
-                }
-
-                if (hit.PointIndex == (chart1.Series[Series].Points.Count - 2))
-                {
-                    // Last point of the graph
-                    if ((dx > chart1.Series[Series].Points[hit.PointIndex - 1].XValue) &&
-                        (dx <= chart1.ChartAreas[0].AxisX.Maximum))
-                    {
-                        curPoint.XValue = dx;
-
-                        if (Series == "Series1")
-                        {
-                            chart1.Series[Series].Points[hit.PointIndex + 1].XValue = dx;     // Move vertical lines with first and last point
-                            int lastIndex = chart1.Series["Series2"].Points.Count - 1;
-                            chart1.Series["Series2"].Points[lastIndex].XValue = dx;           // Move damping limits together 
-
-                        }
-
-                        if (Series == "Series2")                        // Move horizontal lines with first and last point
-
-                            chart1.Series[Series].Points[hit.PointIndex + 1].YValues[0] = dy;
                     }
-                        
-                }
-                else
+                    else if (hit.PointIndex == (chart1.Series[Series].Points.Count - 2))
+                    {
+                        // Last point of the graph
+                        if ((dx > chart1.Series[Series].Points[hit.PointIndex - 1].XValue) &&
+                            (dx <= chart1.ChartAreas[0].AxisX.Maximum))
+                        {
+                            curPoint.XValue = Math.Round(dx / 0.05) * 0.05; //dx;
+
+                            chart1.Series[Series].Points[hit.PointIndex + 1].XValue = Math.Round(dx / 0.05) * 0.05; //dx;     // Move vertical lines with first and last point
+                            int lastIndex = chart1.Series["Series2"].Points.Count - 1;
+                            chart1.Series["Series2"].Points[lastIndex].XValue = Math.Round(dx / 0.05) * 0.05; //dx;           // Move damping limits together 
+
+                        }
+                    }
+                    else
+                    {
+                        /* Sample is between two points */
+                        if ((dx > chart1.Series[Series].Points[hit.PointIndex - 1].XValue) && (dx < chart1.Series[Series].Points[hit.PointIndex + 1].XValue))
+                            curPoint.XValue = Math.Round(dx / 0.05) * 0.05; //dx;
+                    }
+
+                    if ((dy >= chart1.ChartAreas[0].AxisY.Minimum) && (dy <= chart1.ChartAreas[0].AxisY.Maximum))
+                        curPoint.YValues[0] = Math.Round(dy / 0.05) * 0.05; //dy;
+                }            
+                else if(Series == "Series2")
                 {
-                    /* Sample is between two points */
-                    if ((dx > chart1.Series[Series].Points[hit.PointIndex - 1].XValue) && (dx < chart1.Series[Series].Points[hit.PointIndex + 1].XValue))
-                        curPoint.XValue = dx;
+                    if (dy < 0) dy = 0;         // Constrain damping to positive values
+
+                    if (hit.PointIndex == 1)
+                    {
+                        // First point of the graph
+                        if ((dx < chart1.Series[Series].Points[2].XValue) &&
+                            (dx >= chart1.ChartAreas[0].AxisX.Minimum))
+                        {
+                            curPoint.XValue = Math.Round(dx / 0.05) * 0.05; //dx;
+
+                           // Move horizontal lines with first and last point
+                           chart1.Series[Series].Points[0].YValues[0] = Math.Round(dy / 0.05) * 0.05; //dy;
+                        }
+                    }
+                    else if (hit.PointIndex == (chart1.Series[Series].Points.Count - 2))
+                    {
+                        // Last point of the graph
+                        if ((dx > chart1.Series[Series].Points[hit.PointIndex - 1].XValue) &&
+                            (dx <= chart1.ChartAreas[0].AxisX.Maximum))
+                        {
+                            curPoint.XValue = Math.Round(dx / 0.05) * 0.05; //dx;
+
+                            // Move horizontal lines with first and last point
+                            chart1.Series[Series].Points[hit.PointIndex + 1].YValues[0] = Math.Round(dy / 0.05) * 0.05; //dy;
+                        }
+                    }
+                    else
+                    {
+                        /* Sample is between two points */
+                        if ((dx > chart1.Series[Series].Points[hit.PointIndex - 1].XValue) && (dx < chart1.Series[Series].Points[hit.PointIndex + 1].XValue))
+                            curPoint.XValue = Math.Round(dx / 0.05) * 0.05; //dx;
+                    }
+
+                    if ((dy >= chart1.ChartAreas[0].AxisY.Minimum) && (dy <= chart1.ChartAreas[0].AxisY.Maximum))
+                        curPoint.YValues[0] = Math.Round(dy / 0.05) * 0.05; //dy;
+                
+
+                } 
+                else if (Series == "Series3")
+                {
+                    curPoint.XValue = Math.Round(dx / 0.05) * 0.05; //dx;
+                    curPoint.YValues[0] = Math.Round(dy / 0.05) * 0.05; //dy;
+                    //return;
                 }
 
-                if ((dy >= chart1.ChartAreas[0].AxisY.Minimum) && (dy <= chart1.ChartAreas[0].AxisY.Maximum)) 
-                    curPoint.YValues[0] = dy;
- 
+                X_Point_tBox.Text = curPoint.XValue.ToString("F2");
+                Y_Point_tBox.Text = curPoint.YValues[0].ToString("F2");
+
+
             }
         }
 
@@ -367,7 +419,7 @@ namespace FFC_GUI
 
             hit = chart1.HitTest(e.X, e.Y);
 
-            if (hit.Series == null || hit.PointIndex <= 0)
+            if (hit.Series == null || hit.PointIndex < 0)
             {
                 /* transmit new characteristics to the controller */
                 transmit_Characteristics();
@@ -377,7 +429,7 @@ namespace FFC_GUI
            int lastIndex = hit.Series.Points.Count - 1;
 
             // avoid first or last point
-            if (hit.PointIndex > 0 && hit.PointIndex < lastIndex)
+            if ((hit.PointIndex > 0 && hit.PointIndex < lastIndex) || hit.Series.Name == "Series3")
             {
                 try
                 {
@@ -390,7 +442,8 @@ namespace FFC_GUI
                 }
             }
 
-
+            X_Point_tBox.Text = curPoint.XValue.ToString("F2");
+            Y_Point_tBox.Text = curPoint.YValues[0].ToString("F2");
             chart1.Focus();
 
         }
@@ -407,6 +460,8 @@ namespace FFC_GUI
                 if (hit.PointIndex >= 0)        /* Point still selected */
                 {
                     string Series = hit.Series.Name;
+
+                    if (Series == "Series3") return;
 
                     chart1.Series[Series].Points.AddXY(ax.PixelPositionToValue(e.X), ay.PixelPositionToValue(e.Y));
 
@@ -524,32 +579,6 @@ namespace FFC_GUI
             }
         }
 
-        private void Damping_textBox_Leave(object sender, EventArgs e)
-        {
-            if (serialPort1.IsOpen)
-            {
-                try
-                {
-                    serialPort1.WriteLine("damp=" + Damping_textBox.Text);
-                    Console.WriteLine("damp=" + Damping_textBox.Text);
-
-                }
-                catch (Exception err)
-                {
-                    Console.WriteLine("Error: " + err);
-                }
-            };
-        }
-
-        private void Damping_textBox_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyData == Keys.Enter)
-            {
-                this.Invoke(new EventHandler(Damping_textBox_Leave));
-                e.Handled = true;
-                e.SuppressKeyPress = true;
-            }
-        }
 
         private void PosMax_tbox_Leave(object sender, EventArgs e)
         {
@@ -661,6 +690,8 @@ namespace FFC_GUI
                 btnDamper.FlatStyle = FlatStyle.Flat;
             }
         }
+
+
     } 
 }
 
